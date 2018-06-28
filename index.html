@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+  <html lang="fr">
+  <head>
+    <style>
+      body {
+        background: #ddd;
+        padding: 20px;
+        font-size: 1.5rem;
+      }
+      .container {
+        padding: 30px;
+        margin: 0 auto;
+        background: #fff;
+        max-width: 480px;
+      }
+      input {
+        border: 1px solid #eee;
+        border-radius: 5px;
+        padding: 5px;
+        width: 100%;
+        font-size: 1.1rem;
+        margin-bottom: 0.6rem;
+      }
+      input[type="submit"] {
+        color: #fff;
+        background: #56b;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <h3>Login</h3>
+      <form id="login">
+        <input name="email" placeholder="email" />
+        <input type="password" name="pwd" placeholder="pwd" />
+        <input type="submit" value="Login" />
+      </form>
+
+      <h3>Create group</h3>
+      <form id="group">
+        <input name="name" placeholder="group name" />
+        <input type="submit" value="Create" />
+      </form>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/5.1.0/firebase.js"></script>
+    <script>
+
+      // Initialize Firebase
+      const config = {}
+      firebase.initializeApp(config)
+
+      const getFormData = form => {
+        const data = {}
+        const inputs = form.getElementsByTagName('input')
+        for (let input of inputs) {
+          if(input.type === 'submit') {
+            continue
+          }
+          data[input.name] = input.value
+        }
+        return data
+      }
+
+      const onSubmitLogin = e => {
+        e.preventDefault()
+        const credentials = getFormData(e.target)
+
+        // https://firebase.google.com/docs/auth/web/password-auth
+        firebase.auth().signInWithEmailAndPassword(credentials.email, credentials.pwd).catch(function(error) {
+          // Handle Errors here.
+          var errorCode = error.code
+          var errorMessage = error.message
+          console.log(errorCode, errorMessage)
+          // ...
+        })
+        .then(user => console.log('auth ok', user))
+      }
+
+      // Handle add group form submit
+      document.getElementById('login').onsubmit = onSubmitLogin
+
+      const onSubmitGroup = e => {
+        e.preventDefault()
+        const data = getFormData(e.target)
+        console.log(data)
+        const groupsRef = firebase.database().ref('groups')
+        const groupKey = groupsRef.push().key
+
+        firebase.database().ref(`groups/${groupKey}`).set(data)
+      }
+
+
+      // Handle login form submit
+      document.getElementById('group').onsubmit = onSubmitGroup
+    </script>
+  </body>
+</html>
